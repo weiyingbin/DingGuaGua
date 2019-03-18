@@ -12,9 +12,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Mum on 2017/1/24.
- */
 
 public class BookLab {
     public static final String TEXT = "text";

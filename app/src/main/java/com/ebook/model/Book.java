@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by Mum on 2017/1/24.
- */
 public class Book {
     private static final String TAG = "Book";
     private String mBookTitle;
@@ -25,10 +22,15 @@ public class Book {
     //空两格
     private String mSpace = "\t\t\t\t\t\t";
 
+    public Book(String bookTitle, Bitmap bookCover) {
+        mBookTitle = bookTitle;
+        mBookCover = bookCover;
+    }
+
     public Book(String bookTitle, Bitmap bookCover, String fullText) {
         mParagraphList = new ArrayList<>();
         mBookContents = new ArrayList<>();
-        mContentParaIndexs=new ArrayList<>();
+        mContentParaIndexs = new ArrayList<>();
 
         mBookTitle = bookTitle;
         mBookCover = bookCover;
@@ -65,19 +67,18 @@ public class Book {
     }
 
 
-
     private void findContents(List<String> paraList) {
         //字符串匹配模式
         String patternString = "第\\S{2,4}\\s\\S{2,}";
         Pattern pattern = Pattern.compile(patternString);
 
-        for (String para:paraList) {
+        for (String para : paraList) {
 
             Matcher matcher = pattern.matcher(para);
 
-           if (matcher.find()){
+            if (matcher.find()) {
 
-               //除去段首多余空格
+                //除去段首多余空格
                 int start = matcher.start();
                 int end = matcher.end();
                 String subString = para.substring(start, end);

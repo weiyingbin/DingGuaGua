@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">顶呱呱</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">顶呱呱</string>
     <string name="book_shelf">书架</string>
     <string name="book_store">书城</string>
+    <string name="menu_import">导入本地书</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

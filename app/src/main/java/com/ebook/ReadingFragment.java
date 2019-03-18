@@ -37,10 +37,6 @@ import com.ebook.view.popupWindow.SettingPopup;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Mum on 2017/2/6.
- */
-
 public class ReadingFragment extends Fragment implements View.OnClickListener {
     public static final String ARG_FLIP_BOOK_ID = "ARG_FLIP_BOOK_ID ";
     public static final int TEXT_SIZE_DELTA = 50;
@@ -120,7 +116,6 @@ public class ReadingFragment extends Fragment implements View.OnClickListener {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         mBatteryReceiver = new BatteryPowerReceiver();
         mContext.registerReceiver(mBatteryReceiver, filter);
-
     }
 
 

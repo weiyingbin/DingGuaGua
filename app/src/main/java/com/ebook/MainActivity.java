@@ -1,8 +1,12 @@
 package com.ebook;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +15,7 @@ import android.view.MenuItem;
 import com.ebook.fragment.BottomViewAdapter;
 import com.ebook.fragment.ShelfFragment;
 import com.ebook.fragment.StoreFragment;
+import com.tbruyelle.rxpermissions.RxPermissions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private BottomNavigationView mBottomNavigationView;
     private MenuItem menuItem;
+    private RxPermissions mRxPermissions;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -44,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initView();
         setNavigation();
+        initRxPermissions();
     }
 
     public void initView() {
@@ -82,5 +89,9 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setOffscreenPageLimit(2);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+    }
+
+    private void initRxPermissions() {
+        mRxPermissions = new RxPermissions(this);
     }
 }
