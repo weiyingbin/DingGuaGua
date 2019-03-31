@@ -9,6 +9,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
 
 import com.ebook.model.Book;
@@ -21,17 +22,20 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Mum on 2017/2/6.
- */
+import static android.support.constraint.Constraints.TAG;
 
+
+/**
+ * book页面工厂，用于绘制book页面
+ */
 public class BookPageFactory {
     private Context mContext;
     private int mWidth;
     private int mHeight;
     private int marginWidth;
     private int marginHeight;
-    private int mBookId;
+    private Book mBook;
+    private int mShelfId;
 
     //绘制正文区域
     private float mVisibleWidth;
@@ -59,21 +63,26 @@ public class BookPageFactory {
     private String percentStr;
 
 
-    public BookPageFactory(Context context, int bookId) {
+    public BookPageFactory(Context context, Book book, Integer shelfId) {
         mContext = context;
-        mBookId = bookId;
-        calWidthAndHeight();
-        getFontFromAssets();
-
-        initDatas();
+        //mBookId = bookId;
+        mShelfId = shelfId;
+        mBook = book;
+        calWidthAndHeight();//获取屏幕宽度
+        getFontFromAssets();//获取屏幕高度
+        initData();//初始化数据
     }
 
-    private void initDatas() {
-        Book book = BookLab.newInstance(mContext).getBookList().get(mBookId);
-        mParaList = book.getParagraphList();
-        mParaListSize = mParaList.size();
-        mContents = book.getBookContents();
-        mContentParaIndex = book.getContentParaIndexs();
+    private void initData() {
+        //Book book = BookLab.newInstance(mContext).getBookList().get(mBookId);
+        mParaList = mBook.getParagraphList();//段落
+        for (String s : mParaList) {
+            Log.d(TAG, "initData: 段落" + s);
+        }
+
+        mParaListSize = mParaList.size();//段落数量
+        mContents = mBook.getBookContents();//目录集合
+        mContentParaIndex = mBook.getContentParaIndexs();//目录对应的在段落集合中的索引
 
         marginWidth = (int) (mWidth / 30f);
         marginHeight = (int) (mHeight / 60f);
@@ -94,7 +103,6 @@ public class BookPageFactory {
                 0xffa9a8a8   //夜间
         };
 
-
         PaintInfo paintInfo = SaveHelper.getObject(mContext, SaveHelper.PAINT_INFO);
         if (paintInfo != null)
             mPaintInfo = paintInfo;
@@ -110,7 +118,7 @@ public class BookPageFactory {
         mPaint.setTextSize(mPaintInfo.textSize);
         mPaint.setTypeface(mTypefaceList.get(mPaintInfo.typeIndex));
 
-        ReadInfo info = SaveHelper.getObject(mContext, mBookId + SaveHelper.DRAW_INFO);
+        ReadInfo info = SaveHelper.getObject(mContext, mShelfId + SaveHelper.DRAW_INFO);
         if (info != null)
             mReadInfo = info;
         else
@@ -131,7 +139,7 @@ public class BookPageFactory {
         //下一页
         mPageLines = getNextPageLines();
         //已经到最后一页了
-        if (mPageLines.size() == 0 || mPageLines == null) {
+        if (mPageLines == null || mPageLines.size() == 0) {
             return null;
         }
 
@@ -304,19 +312,17 @@ public class BookPageFactory {
 
     }
 
-    private String findContent(int paraIndex) {    //找到当前page对应的目录
-        for (int i = 0; i < mContentParaIndex.size() - 1; i++) {
-            if (paraIndex >= mContentParaIndex.get(i) && paraIndex < mContentParaIndex.get(i + 1)) {
-                if (i == 0)
-                    i = 1;   //合并卷名和第一章
-
-                return mContents.get(i);
-            }
-
+    /**
+     * 找到当前page对应的目录
+     *
+     * @param paraIndex
+     * @return
+     */
+    private String findContent(int paraIndex) {
+        if (mContentParaIndex != null && mContentParaIndex.size() > 0) {
+            return mContents.get(mContentParaIndex.size() - 1);
         }
-
-        return mContents.get(mContentParaIndex.size() - 1);
-
+        return "";
     }
 
     private void drawInfo(Canvas canvas, float powerPercent) {

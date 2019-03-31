@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,38 +16,42 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ebook.FileActivity;
+import com.ebook.activity.FileActivity;
 import com.ebook.R;
-import com.ebook.ReadingActivity;
+import com.ebook.activity.ReadingActivity;
+import com.ebook.activity.ShelfActivity;
+import com.ebook.exception.EBookServiceRuntimeException;
 import com.ebook.model.Book;
 import com.ebook.model.BookLab;
 import com.ebook.model.Shelf;
 import com.ebook.service.ShelfService;
+import com.ebook.util.ShelfHandle;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.litepal.LitePalBase.TAG;
 
 
 public class ShelfFragment extends Fragment {
     private Context mContext;
     private List<Book> mBookList;
+    private List<Shelf> mShelfList;
     private Toolbar mToolbar;
     private ShelfService shelfService;
+
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_shelf_layout, container, false);
+        mContext = getActivity();
         initToolbar(v);
         initEvents(v);
         return v;
-
     }
 
     @Override
@@ -61,7 +64,7 @@ public class ShelfFragment extends Fragment {
         mToolbar = (Toolbar) v.findViewById(R.id.shelf_fragment_toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
         setHasOptionsMenu(true);
-        mToolbar.setTitle(R.string.title_activity_main);
+        mToolbar.setTitle(R.string.book_shelf);
         mToolbar.inflateMenu(R.menu.shelf_toolbar_menu);
         mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -78,74 +81,75 @@ public class ShelfFragment extends Fragment {
     }
 
     private void initEvents(View v) {
-        mContext = getActivity();
-        mBookList = new ArrayList<>();
-        mBookList = BookLab.newInstance(mContext).getBookList();
+
+        mShelfList = new ArrayList<>();
+        //mBookList = BookLab.newInstance(mContext).getBookList();
         if (shelfService == null) {
             shelfService = new ShelfService(mContext);
         }
         List<Book> bookList = BookLab.newInstance(mContext).getBookList();
         List<Shelf> shelves = shelfService.listShelf();
         for (Shelf shelf : shelves) {
-            Log.d(TAG, "shelf:" + shelf.toString());
-            Book book = new Book(shelf.getName(), bookList.get(0).getBookCover());
-            mBookList.add(book);
+            mShelfList.add(shelf);
         }
         RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.fragment_book_shelf_recycler_view);
         recyclerView.setLayoutManager(new GridLayoutManager(mContext, 3));
-        recyclerView.setAdapter(new BookAdapter(mBookList));
+        recyclerView.setAdapter(new ShelfAdapter(mShelfList));
     }
 
 
-    private class BookHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private ImageView mBookCover;
-        private TextView mBookTitle;
-        private Book mBook;
+    private class ShelfHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private ImageView mShelfImage;
+        private TextView mShelfName;
+        private Shelf mShelf;
 
-        public BookHolder(View itemView) {
+        public ShelfHolder(View itemView) {
             super(itemView);
-            mBookCover = (ImageView) itemView.findViewById(R.id.item_recycler_view_image_view);
-            mBookTitle = (TextView) itemView.findViewById(R.id.item_recycler_view_text_view);
+            mShelfImage = (ImageView) itemView.findViewById(R.id.item_recycler_view_image_view);
+            mShelfName = (TextView) itemView.findViewById(R.id.item_recycler_view_text_view);
             itemView.setOnClickListener(this);
         }
 
-        public void bind(Book book) {
-            mBook = book;
-            mBookCover.setImageBitmap(mBook.getBookCover());
-            mBookTitle.setText(mBook.getBookTitle());
+        public void bind(Shelf shelf) {
+            mShelf = shelf;
+            if (mShelf.getImage() == null) {
+                mShelfImage.setImageBitmap(BookLab.newInstance(mContext).loadImage("image/book_image.jpg"));
+            }
+            mShelfName.setText(mShelf.getName());
         }
 
         @Override
         public void onClick(View v) {
-            Intent intent = ReadingActivity.newIntent(mContext, mBookList.indexOf(mBook));
-            startActivity(intent);
+            try {
+                ShelfHandle.openShelf(mContext, mShelf.getId());
+            } catch (EBookServiceRuntimeException e) {
+                Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
-
-
     }
 
-    private class BookAdapter extends RecyclerView.Adapter<BookHolder> {
-        private List<Book> bookList = new ArrayList<>();
+    private class ShelfAdapter extends RecyclerView.Adapter<ShelfHolder> {
+        private List<Shelf> shelfList = new ArrayList<>();
 
-        public BookAdapter(List<Book> bookList) {
-            this.bookList = bookList;
+        public ShelfAdapter(List<Shelf> shelfList) {
+            this.shelfList = shelfList;
         }
 
         @Override
-        public BookHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ShelfHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             View view = inflater.inflate(R.layout.item_recycler_view_shelf, parent, false);
-            return new BookHolder(view);
+            return new ShelfHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(BookHolder holder, int position) {
-            holder.bind(bookList.get(position));
+        public void onBindViewHolder(ShelfHolder holder, int position) {
+            holder.bind(shelfList.get(position));
         }
 
         @Override
         public int getItemCount() {
-            return bookList.size();
+            return shelfList.size();
         }
     }
 

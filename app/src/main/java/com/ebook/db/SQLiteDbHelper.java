@@ -7,13 +7,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLiteDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "ebook.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     public static final String TABLE_SHELF = "shelf";
 
     private static final String CREATE_SHELF_TABLE_SQL = "create table " + TABLE_SHELF + "("
-            + "id integer(11) primary key autoincrement,"
-            + "name varchar(255),localPath varchar(255),"
-            + "image varchar(255),createTime varchar(255))";
+            + "id integer primary key autoincrement,"
+            + "name varchar(255),localPath varchar(500),"
+            + "image varchar(255),createTime varchar(255),"
+            + "htmlPath varchar(500))";
 
     public SQLiteDbHelper(Context context) {
         // 传递数据库名与版本号给父类
@@ -30,12 +31,11 @@ public class SQLiteDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // 数据库版本号变更会调用 onUpgrade 函数，在这根据版本号进行升级数据库
-        switch (oldVersion) {
-            case 1:
-                // do something
-                break;
-            default:
-                break;
-        }
+        db.execSQL("drop table if exists man");
+        onCreate(db);
+    }
+
+    public static void update(SQLiteDatabase db, String sql) {
+        db.execSQL(sql);
     }
 }

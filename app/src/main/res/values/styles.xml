@@ -6,20 +6,20 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
     </style>
 
     <style name="pop_window_anim_style">
         <item name="android:windowEnterAnimation">
             @anim/pop_show_anim
         </item>
-
         <item name="android:windowExitAnimation">
             @anim/pop_hide_anim
         </item>
-
     </style>
 
-
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/color_toolbar_title</item>
+    </style>
 
 </resources>

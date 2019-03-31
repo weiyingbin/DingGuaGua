@@ -23,9 +23,8 @@ import com.ebook.view.popupWindow.SettingPopup;
 import java.util.List;
 
 /**
- * Created by Mum on 2017/2/5.
+ * 仿真翻页
  */
-
 public class FlipView extends View {
     private static final String TAG = "FoldView";
     private static final float CURVATURE = 1 / 4f;//假定贝塞尔曲线从原这折线的1/4f处开始
@@ -116,13 +115,11 @@ public class FlipView extends View {
         STYLE_PAGE_LIKE, STYLE_COVER, STYLE_NO_EFFECT
     }
 
-
     public void setOnPageFlippedListener(OnPageFlippedListener listener) {
         mListener = listener;
     }
 
     public interface OnPageFlippedListener {
-
         List<Bitmap> onNextPageFlipped();
 
         List<Bitmap> onPrePageFlipped();
@@ -131,7 +128,6 @@ public class FlipView extends View {
 
         void onFoldViewClicked();
     }
-
 
     //处理滑动的Handler
     private class SlideHandler extends Handler {
@@ -151,7 +147,6 @@ public class FlipView extends View {
         }
     }
 
-
     public FlipView(Context context) {
         this(context, null);
     }
@@ -163,7 +158,6 @@ public class FlipView extends View {
         initObjects();
     }
 
-
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mViewWidth = w;
@@ -171,99 +165,67 @@ public class FlipView extends View {
         initDatas();
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
-
         if (mBitmapList == null || mBitmapList.size() == 0) {
             return;
         }
-
         // 重绘时清除上次路径
         mFoldPath.reset();
         mFoldAndNextPath.reset();
-
         //首次进入绘制前一页
         if (!isPrePageOver && mTouch.x == 0 && mTouch.y == 0) {
             canvas.drawBitmap(mBitmapList.get(mPrePage), 0, 0, null);
             return;
         }
-
-
         if (!isPrePageOver) {
-
             //仿真翻页
             if (mFlipStyle == FlipStyle.STYLE_PAGE_LIKE) {
-
                 if (mFlipMode == FlipMode.RIGHT_MIDDLE)
-
                     flipPageFromMiddle(canvas); //右侧中部翻页
                 else
                     flipPageFromCorner(canvas); //右上角和右下角翻页
-
             }
-
             //覆盖翻页
             if (mFlipStyle == FlipStyle.STYLE_COVER)
                 flipCover(canvas);
-
-
             //无效果翻页
             if (mFlipStyle == FlipStyle.STYLE_NO_EFFECT)
                 flipNoEffect(canvas);
-
-
         } else {
             //前一页已经完全翻完，直接绘制下一页区域
             canvas.save();
             canvas.drawBitmap(mBitmapList.get(mNextPage), 0, 0, null);
             canvas.restore();
-
         }
-
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (isSlide)
             return true;   //自动滑动过程中不响应touch事件
-
         mTouch.x = event.getX();
         mTouch.y = event.getY();
-
         float width = mDiagonalLength / 100f; //判断是翻页还是点击事件的距离
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mLastDownPoint.x = mTouch.x;//保存下手指落下时刻的触摸点
                 mLastDownPoint.y = mTouch.y;
-
                 isDrawOnMove = false;
-
                 //仿真翻页风格确定翻页方式
                 if (mFlipStyle == FlipStyle.STYLE_PAGE_LIKE)
                     getFlipPageMode();
-
                 break;
-
             case MotionEvent.ACTION_MOVE:
-
                 if (!isDrawOnMove) {
-
                     //翻前一页
                     if (mTouch.x - mLastDownPoint.x > width) {
-
                         isFlipNext = false;
-
                         if (mFlipStyle == FlipStyle.STYLE_PAGE_LIKE)
                             mFlipMode = FlipMode.RIGHT_MIDDLE;
-
                         if (!isPrePageOver) {
                             //回调获得前一页page
-
                             List<Bitmap> temp = null;
-
                             if (mListener != null)
                                 temp = mListener.onPrePageFlipped();
 
@@ -271,131 +233,84 @@ public class FlipView extends View {
                                 Toast.makeText(mContext, "已经是第一页了", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
-
                             mBitmapList = temp;
                             isDrawOnMove = true;
-
-
                         } else {
-
                             isPrePageOver = false;
                             isDrawOnMove = true;
                         }
-
                     }
-
-
                     //翻下一页
                     if (mTouch.x - mLastDownPoint.x < -width) {
                         isFlipNext = true;
-
                         if (isPrePageOver) {
                             //回调获得后一页page
-
                             List<Bitmap> temp = null;
-
                             if (mListener != null)
                                 temp = mListener.onNextPageFlipped();
-
                             if (temp == null) {
                                 Toast.makeText(mContext, "已经是最后一页了", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
-
                             mBitmapList = temp;
                             isPrePageOver = false;
                             isDrawOnMove = true;
-
                         } else {
-
                             isDrawOnMove = true;
                         }
                     }
-
-
                 } else {
-
                     if (mListener != null)
                         mListener.onFlipStarted();
-
                     invalidate();
                 }
-
                 break;
-
-
             case MotionEvent.ACTION_UP:
-
                 float dis = (float) Math.hypot(mTouch.x - mLastDownPoint.x, mTouch.y - mLastDownPoint.y);
                 if (dis < width) {   //没有触发翻页效果，认为是点击事件
-
                     mTouch.x = mCorner.x;  //强制设置touch点坐标，防止因设置visibility而重绘导致的画面突变
                     mTouch.y = mCorner.y;
-
                     if (mListener != null)
                         mListener.onFoldViewClicked();
-
                     return true;
                 }
-
                 if (!isDrawOnMove) {
                     return true;
                 }
-
                 if (mFlipStyle == FlipStyle.STYLE_PAGE_LIKE) {
-
                     //抬起的时候强制限制触摸点，防止滑动时因为取消限制产生的突变
                     if (mFlipMode == FlipMode.RIGHT_BOTTOM || mFlipMode == FlipMode.RIGHT_TOP) {
                         PointF pointF = limitTouchPoints(mTouch.x, mTouch.y);
                         mTouch.x = pointF.x;
                         mTouch.y = pointF.y;
                     }
-
                 }
-
-
                 if (mFlipStyle != FlipStyle.STYLE_NO_EFFECT) {
-
                     if (mTouch.x < mAutoAreaBound) {
-
                         mSlide = Slide.LEFT;// 当前为往左滑
                         startSlide(mTouch.x, mTouch.y);// 开始滑动
                     } else {
-
                         mSlide = Slide.RIGHT;
                         startSlide(mTouch.x, mTouch.y);
-
                     }
                 }
-
-
                 break;
-
         }
-
         return true;
     }
 
     private void getFlipPageMode() {
         float height = mViewHeight * 3 / 10f;
         if (mTouch.y > mViewHeight - height) {
-
             mFlipMode = FlipMode.RIGHT_BOTTOM;
-
             mCorner.x = mViewWidth;
             mCorner.y = mViewHeight;
-
         } else if (mTouch.y > height) {
-
             mFlipMode = FlipMode.RIGHT_MIDDLE;
-
             mCorner.x = mViewWidth;
             mCorner.y = mViewHeight / 2f;
-
         } else {
-
             mFlipMode = FlipMode.RIGHT_TOP;
-
             mCorner.x = mViewWidth;
             mCorner.y = 0;
         }
@@ -457,11 +372,8 @@ public class FlipView extends View {
         if (!isSlide) {
             mTouch = limitTouchPoints(mTouch.x, mTouch.y);
         }
-
         calPoints();    //计算坐标点
-
         calPaths();    //计算路径
-
         drawCurrentAreaAndShadow(canvas);   //当前页区域填充及阴影绘制
 
         drawFoldAreaAndShadow(canvas);     //折叠区域填充及阴影绘制
@@ -480,7 +392,7 @@ public class FlipView extends View {
             canvas.clipRect(new RectF(0, 0, mTouch.x, mViewHeight));
             canvas.drawBitmap(mBitmapList.get(mPrePage), 0, 0, null);
 
-            mCurShadowRL.setBounds((int) (mTouch.x - foldWidth  / 10f), 0, (int) (mTouch.x + 1), mViewHeight);
+            mCurShadowRL.setBounds((int) (mTouch.x - foldWidth / 10f), 0, (int) (mTouch.x + 1), mViewHeight);
             mCurShadowRL.draw(canvas);
             canvas.restore();
 
@@ -533,15 +445,14 @@ public class FlipView extends View {
             //前一页已经向左完全翻完
             if (mSlide == Slide.LEFT && mTouch.x <= -mViewWidth + mFoldBuffArea) {
                 isPrePageOver = true;
-                isSlide=false;
+                isSlide = false;
                 invalidate();
             }
 
             //往右边滑结束
             if (mSlide == Slide.RIGHT && mTouch.x >= mViewWidth) {
-                isSlide=false;
+                isSlide = false;
             }
-
 
 
             //往左边滑
@@ -568,12 +479,10 @@ public class FlipView extends View {
                 if (mFlipMode == FlipMode.RIGHT_BOTTOM || mFlipMode == FlipMode.RIGHT_TOP) {
                     mTouch.y = mAutoSlideStart.y + ((mTouch.x - mAutoSlideStart.x) * (mCorner.y - mAutoSlideStart.y)) / (mCorner.x - mAutoSlideStart.x);
                 }
-
                 // 让SlideHandler处理重绘
                 mSlideHandler.sleep(25);
 
             }
-
         }
 
         if (mFlipStyle == FlipStyle.STYLE_COVER) {
@@ -581,15 +490,13 @@ public class FlipView extends View {
             //前一页已经向左完全翻完
             if (mSlide == Slide.LEFT && mTouch.x <= -(mViewWidth - mLastDownPoint.x)) {
                 isPrePageOver = true;
-                isSlide=false;
+                isSlide = false;
                 invalidate();
-
             }
 
             //往右边滑
             if (mSlide == Slide.RIGHT && mTouch.x >= mViewWidth) {
-               isSlide=false;
-
+                isSlide = false;
             }
 
             //往左边滑
@@ -743,7 +650,7 @@ public class FlipView extends View {
 
             //阴影的起点
             PointF pointF = new PointF((float) (mTouch.x - d1), (float) (mTouch.y - d2));
-            float width = (float) Math.hypot((mTouch.x - mCorner.x), (mTouch.y - mCorner.y))/40f;
+            float width = (float) Math.hypot((mTouch.x - mCorner.x), (mTouch.y - mCorner.y)) / 40f;
             int left = (int) (mBezierControl1.x - width);
             int right = (int) mBezierControl1.x + 1;
 
@@ -785,7 +692,7 @@ public class FlipView extends View {
             canvas.clipPath(mFoldAndNextPath, Region.Op.DIFFERENCE);
             canvas.clipPath(tempPath);
 
-            mCurShadowBT.setBounds((int) (mTouch.x - 2f*width), topY,
+            mCurShadowBT.setBounds((int) (mTouch.x - 2f * width), topY,
                     (int) (mTouch.x + mDiagonalLength), btmY);
             canvas.rotate(rotateDegrees, mTouch.x, mTouch.y);
             mCurShadowBT.draw(canvas);
@@ -809,7 +716,7 @@ public class FlipView extends View {
             //阴影的起点
             PointF pointF = new PointF((float) (mTouch.x - d1), (float) (mTouch.y + d2));
 
-            float width = (float) Math.hypot((mTouch.x - mCorner.x), (mTouch.y - mCorner.y))/40f;
+            float width = (float) Math.hypot((mTouch.x - mCorner.x), (mTouch.y - mCorner.y)) / 40f;
             int left = (int) (mBezierControl1.x - width);
             int right = (int) mBezierControl1.x + 1;
 
@@ -851,7 +758,7 @@ public class FlipView extends View {
             canvas.clipPath(mFoldAndNextPath, Region.Op.DIFFERENCE);
             canvas.clipPath(tempPath);
 
-            mCurShadowTB.setBounds((int) (mTouch.x - 2f*width), topY,
+            mCurShadowTB.setBounds((int) (mTouch.x - 2f * width), topY,
                     (int) (mTouch.x + mDiagonalLength), btmY);
             canvas.rotate(rotateDegrees, mTouch.x, mTouch.y);
             mCurShadowTB.draw(canvas);
@@ -1132,7 +1039,7 @@ public class FlipView extends View {
 
         //滑动速度
         mSlideSpeedLeft = mViewWidth / 25f;
-        mSlideSpeedRight = mViewWidth  / 80f;
+        mSlideSpeedRight = mViewWidth / 80f;
 
         isPrePageOver = SaveHelper.getBoolean(mContext, SaveHelper.IS_PRE_PAGE_OVER);
         int style = SaveHelper.getInt(mContext, SaveHelper.FLIP_STYLE);

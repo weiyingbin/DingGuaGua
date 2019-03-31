@@ -19,11 +19,6 @@ import com.ebook.model.Book;
 
 import java.util.List;
 
-
-/**
- * Created by Administrator on 2017/1/7.
- */
-
 public class ContentPopup extends BasePopupWindow {
     private RecyclerView mRecyclerView;
     private LinearLayout mLinearLayout;

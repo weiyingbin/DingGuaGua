@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.SeekBar;
 
 import com.ebook.R;
-import com.ebook.ReadingFragment;
+import com.ebook.activity.ReadingFragment;
 import com.ebook.util.ScreenBrightnessHelper;
 import com.ebook.util.bookPageUtil.PaintInfo;
 import com.ebook.util.SaveHelper;

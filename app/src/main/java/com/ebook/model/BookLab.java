@@ -24,8 +24,11 @@ public class BookLab {
     private String[] mAssetsImageList;
     private String[] mAssetsTextList;
 
+    public BookLab() {
 
-    private BookLab(Context context) {
+    }
+
+    public BookLab(Context context) {
         mAssetManager = context.getAssets();
         loadAssetsFiles();
     }
@@ -104,24 +107,30 @@ public class BookLab {
     }
 
     //从assets中读取图片
-    private Bitmap loadImage(String path) {
-        Bitmap image = null;
-        InputStream in = null;
-        try {
-            in = mAssetManager.open(path);
-            image = BitmapFactory.decodeStream(in);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+    public Bitmap loadImage(String path) {
+        if (path != null && !path.equals("")) {
+            Bitmap image = null;
+            InputStream in = null;
             try {
-                in.close();
+                in = mAssetManager.open(path);
+                image = BitmapFactory.decodeStream(in);
+
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            } finally {
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
 
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return image;
         }
-        return image;
+        return null;
     }
 
     public List<Book> getBookList() {

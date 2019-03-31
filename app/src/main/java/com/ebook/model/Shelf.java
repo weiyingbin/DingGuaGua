@@ -6,6 +6,15 @@ public class Shelf {
     private String localPath;//本地路径
     private String image;//图片
     private String createTime;//创建时间
+    private String htmlPath;//html路径
+
+    public String getHtmlPath() {
+        return htmlPath;
+    }
+
+    public void setHtmlPath(String htmlPath) {
+        this.htmlPath = htmlPath;
+    }
 
     public Integer getId() {
         return id;
@@ -55,6 +64,7 @@ public class Shelf {
                 ", localPath='" + localPath + '\'' +
                 ", image='" + image + '\'' +
                 ", createTime='" + createTime + '\'' +
+                ", htmlPath='" + htmlPath + '\'' +
                 '}';
     }
 }

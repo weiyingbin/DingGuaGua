@@ -2,6 +2,7 @@ package com.ebook.model;
 
 import android.graphics.Bitmap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,9 +35,10 @@ public class Book {
 
         mBookTitle = bookTitle;
         mBookCover = bookCover;
-
+        if (fullText == null) {
+            fullText = "";
+        }
         formatText(fullText);
-
         findContents(mParagraphList);
     }
 
@@ -59,11 +61,8 @@ public class Book {
                 paragraph = "\n" + mSpace + paragraphs[i];
 
             }
-
             mParagraphList.add(paragraph);
-
         }
-
     }
 
 
@@ -71,13 +70,9 @@ public class Book {
         //字符串匹配模式
         String patternString = "第\\S{2,4}\\s\\S{2,}";
         Pattern pattern = Pattern.compile(patternString);
-
         for (String para : paraList) {
-
             Matcher matcher = pattern.matcher(para);
-
             if (matcher.find()) {
-
                 //除去段首多余空格
                 int start = matcher.start();
                 int end = matcher.end();
@@ -85,11 +80,9 @@ public class Book {
 
                 mBookContents.add(subString);   //目录
                 mContentParaIndexs.add(paraList.indexOf(para)); //目录对应的在段落集合中的索引
-
             }
 
         }
-
     }
 
 
